@@ -45,7 +45,7 @@ async function route() {
   if (name === 'today') {
     await renderToday({ mount: app, api, members: state.members, showToast });
   } else if (name === 'family') {
-    await renderFamily({ mount: app, api, members: state.members, taxonomy: state.taxonomy, labels: state.labels, refreshMembers: loadMembers, showToast });
+    await renderFamily({ mount: app, api, members: state.members, taxonomy: state.taxonomy, labels: state.labels, refreshMembers: loadMembers, showToast, isStatic: window.__MINGYUAN_STATIC__ === true });
   } else if (name === 'library') {
     await renderLibrary({ mount: app, api, taxonomy: state.taxonomy, labels: state.labels, showToast });
   } else if (name === 'tongue') {
