@@ -56,16 +56,6 @@ npm run build:static
 npm run preview:static
 ```
 
-然后打开 [http://127.0.0.1:4174/myshipu/](http://127.0.0.1:4174/myshipu/)。
-
-GitHub 仓库中进入 **Settings > Pages**，选择：
-
-- Source：`Deploy from a branch`
-- Branch：`main`
-- Folder：`/docs`
-
-发布地址为 [https://driphub.github.io/myshipu/](https://driphub.github.io/myshipu/)。每次修改静态版源码后，重新运行 `npm run build:static` 并提交 `docs/` 产物。
-
 ### 浏览器数据与隐私
 
 - 家庭档案、舌象照片和推荐历史保存在 IndexedDB，只属于当前浏览器资料，不会自动写入 Git 仓库或同步到其他设备。
