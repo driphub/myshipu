@@ -1,4 +1,3 @@
-import { api } from './api.js';
 import { renderToday } from './pages/today.js';
 import { renderFamily } from './pages/family.js';
 import { renderLibrary } from './pages/library.js';
@@ -8,6 +7,10 @@ const app = document.querySelector('#app');
 const nav = document.querySelector('.main-nav');
 const menu = document.querySelector('#mobile-menu');
 const state = { members: [], taxonomy: {}, labels: {} };
+const runtime = window.__MINGYUAN_STATIC__
+  ? await import('./static-api.mjs')
+  : await import('./api.js');
+const { api } = runtime;
 
 document.querySelector('#today-label').textContent = new Intl.DateTimeFormat('zh-CN', {
   year: 'numeric', month: 'long', day: 'numeric', weekday: 'short',

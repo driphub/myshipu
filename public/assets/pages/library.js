@@ -1,7 +1,7 @@
-import { escapeHtml } from '../api.js';
+import { escapeHtml, mediaUrl } from '../api.js';
 
 function card(item, labels) {
-  return `<article class="library-card" data-item-id="${escapeHtml(item.id)}" data-item-type="${escapeHtml(item.type)}" tabindex="0"><img src="/${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}"><div class="library-card-body"><span class="type-label">${item.type === 'recipe' ? '药膳菜谱' : '食养茶饮'}</span><h2>${escapeHtml(item.name)}</h2><p>${item.needTags.map((tag) => escapeHtml(labels[tag] || tag)).join(' · ')}</p><div class="tag-list">${item.seasonTags.map((tag) => `<span>${escapeHtml({ spring: '春', summer: '夏', autumn: '秋', winter: '冬', all: '四季' }[tag] || tag)}</span>`).join('')}</div></div></article>`;
+  return `<article class="library-card" data-item-id="${escapeHtml(item.id)}" data-item-type="${escapeHtml(item.type)}" tabindex="0"><img src="${escapeHtml(mediaUrl(item.image))}" alt="${escapeHtml(item.name)}"><div class="library-card-body"><span class="type-label">${item.type === 'recipe' ? '药膳菜谱' : '食养茶饮'}</span><h2>${escapeHtml(item.name)}</h2><p>${item.needTags.map((tag) => escapeHtml(labels[tag] || tag)).join(' · ')}</p><div class="tag-list">${item.seasonTags.map((tag) => `<span>${escapeHtml({ spring: '春', summer: '夏', autumn: '秋', winter: '冬', all: '四季' }[tag] || tag)}</span>`).join('')}</div></div></article>`;
 }
 
 export async function renderLibrary({ mount, api, taxonomy, labels, showToast }) {
@@ -29,7 +29,7 @@ export async function renderLibrary({ mount, api, taxonomy, labels, showToast })
     try {
       const { item } = await api(`/api/library/${itemType}/${id}`);
       const teaMeta = item.type === 'tea' ? `<dl><div><dt>每次用量</dt><dd>${escapeHtml(item.amount)}</dd></div><div><dt>饮用时间</dt><dd>${escapeHtml(item.timing)}</dd></div></dl>` : '';
-      dialog.innerHTML = `<div class="detail-hero"><img src="/${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}"><button class="icon-button close-on-image" aria-label="关闭">×</button></div><div class="detail-content"><span class="type-label">${item.type === 'recipe' ? '药膳菜谱' : '食养茶饮'}</span><h2>${escapeHtml(item.name)}</h2>${teaMeta}<h3>材料</h3><ul class="ingredient-list">${item.ingredients.map((ingredient) => `<li><span>${escapeHtml(ingredient.name)}</span><b>${escapeHtml(ingredient.amount)}</b></li>`).join('')}</ul><h3>做法</h3><ol class="steps">${item.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ol>${item.cautionFlags.length ? `<div class="warning-banner"><strong>慎用</strong><span>${item.cautionFlags.map(escapeHtml).join('、')}</span></div>` : ''}</div>`;
+      dialog.innerHTML = `<div class="detail-hero"><img src="${escapeHtml(mediaUrl(item.image))}" alt="${escapeHtml(item.name)}"><button class="icon-button close-on-image" aria-label="关闭">×</button></div><div class="detail-content"><span class="type-label">${item.type === 'recipe' ? '药膳菜谱' : '食养茶饮'}</span><h2>${escapeHtml(item.name)}</h2>${teaMeta}<h3>材料</h3><ul class="ingredient-list">${item.ingredients.map((ingredient) => `<li><span>${escapeHtml(ingredient.name)}</span><b>${escapeHtml(ingredient.amount)}</b></li>`).join('')}</ul><h3>做法</h3><ol class="steps">${item.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ol>${item.cautionFlags.length ? `<div class="warning-banner"><strong>慎用</strong><span>${item.cautionFlags.map(escapeHtml).join('、')}</span></div>` : ''}</div>`;
       dialog.querySelector('button').addEventListener('click', () => dialog.close());
       dialog.showModal();
     } catch (error) { showToast(error.message, 'error'); }

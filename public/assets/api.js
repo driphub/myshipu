@@ -21,6 +21,20 @@ export async function api(path, options = {}) {
   return result;
 }
 
+export function mediaUrl(value) {
+  if (!value) return '';
+  const source = String(value);
+  if (/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(source)) return source;
+  if (/^[a-z][a-z\d+.-]*:/i.test(source) || source.startsWith('//')) {
+    throw new ApiError('图片地址不安全', 400, 'VALIDATION_ERROR');
+  }
+  const relative = source.replace(/^\/+/, '');
+  if (!/^(?:assets\/images|uploads)\/[a-zA-Z0-9._-]+\.(?:jpe?g|png|webp)$/.test(relative)) {
+    throw new ApiError('图片地址不安全', 400, 'VALIDATION_ERROR');
+  }
+  return new URL(relative, document.baseURI).href;
+}
+
 export function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
 }
