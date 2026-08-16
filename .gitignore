@@ -4,3 +4,6 @@ data/.transaction.json
 data/*.json
 data/*.bak
 .DS_Store
+
+/docs/superpowers/
+/test/
