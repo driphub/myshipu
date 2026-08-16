@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f0e7">
+  <title>明膳 · 家庭食养</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#today" aria-label="明膳家庭食养首页">
+      <span class="brand-seal" aria-hidden="true">膳</span>
+      <span><strong>明膳</strong><small>家庭食养</small></span>
+    </a>
+    <nav class="main-nav" aria-label="主导航">
+      <a href="#today" data-route="today">今日推荐</a>
+      <a href="#family" data-route="family">家庭档案</a>
+      <a href="#library" data-route="library">药膳茶饮库</a>
+      <a href="#tongue" data-route="tongue">AI舌诊</a>
+    </nav>
+    <div class="date-chip" id="today-label"></div>
+    <button class="mobile-menu" id="mobile-menu" aria-label="打开导航" aria-expanded="false">☰</button>
+  </header>
+  <main id="app" tabindex="-1">
+    <div class="page-loading" aria-live="polite">正在准备家庭食养数据…</div>
+  </main>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+  <footer>食养建议仅供日常饮食参考，不替代医疗诊断、处方或治疗。</footer>
+  <noscript>请启用 JavaScript 使用本地食养系统。</noscript>
+  <script type="module" src="/assets/app.js"></script>
+</body>
+</html>
