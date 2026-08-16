@@ -1,0 +1,31 @@
+{
+  "member": {
+    "id": "member-1",
+    "name": "测试成员",
+    "birthYear": 1988,
+    "ageGroup": "adult",
+    "needTags": ["spleen-support"],
+    "preferenceTags": ["soup"],
+    "allergies": [],
+    "avoidIngredients": [],
+    "pregnancyStatus": "none",
+    "chronicConditions": [],
+    "medications": []
+  },
+  "item": {
+    "id": "item-1",
+    "name": "测试条目",
+    "ingredients": [{ "id": "yam", "name": "山药" }],
+    "needTags": ["spleen-support"],
+    "preferenceTags": ["soup"],
+    "seasonTags": ["autumn"],
+    "hardContraindications": [],
+    "cautionFlags": [],
+    "medicinalTea": false
+  },
+  "scores": {
+    "documented": 95,
+    "withCaution": 85,
+    "confirmedDryness": 90
+  }
+}
