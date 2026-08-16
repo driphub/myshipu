@@ -1,10 +1,13 @@
 import { api } from './api.js';
 import { renderToday } from './pages/today.js';
+import { renderFamily } from './pages/family.js';
+import { renderLibrary } from './pages/library.js';
+import { renderTongue } from './pages/tongue.js';
 
 const app = document.querySelector('#app');
 const nav = document.querySelector('.main-nav');
 const menu = document.querySelector('#mobile-menu');
-const state = { members: [] };
+const state = { members: [], taxonomy: {}, labels: {} };
 
 document.querySelector('#today-label').textContent = new Intl.DateTimeFormat('zh-CN', {
   year: 'numeric', month: 'long', day: 'numeric', weekday: 'short',
@@ -22,6 +25,13 @@ function showToast(message, type = 'info') {
 async function loadMembers() {
   const result = await api('/api/family');
   state.members = result.members;
+  window.__mingyuanMembers = state.members;
+}
+
+async function loadTaxonomy() {
+  const result = await api('/api/taxonomy');
+  state.taxonomy = result.taxonomy;
+  state.labels = result.labels;
 }
 
 async function route() {
@@ -31,8 +41,14 @@ async function route() {
   menu.setAttribute('aria-expanded', 'false');
   if (name === 'today') {
     await renderToday({ mount: app, api, members: state.members, showToast });
+  } else if (name === 'family') {
+    await renderFamily({ mount: app, api, members: state.members, taxonomy: state.taxonomy, labels: state.labels, refreshMembers: loadMembers, showToast });
+  } else if (name === 'library') {
+    await renderLibrary({ mount: app, api, taxonomy: state.taxonomy, labels: state.labels, showToast });
+  } else if (name === 'tongue') {
+    await renderTongue({ mount: app, api, members: state.members, taxonomy: state.taxonomy, labels: state.labels, showToast });
   } else {
-    app.innerHTML = `<section class="empty-page"><p class="eyebrow">明膳家庭食养</p><h1>此模块正在载入</h1><p>返回“今日推荐”可先查看今天的全家方案。</p><a class="button primary" href="#today">返回今日推荐</a></section>`;
+    location.hash = '#today';
   }
   app.focus();
 }
@@ -48,4 +64,4 @@ function showFatal(error) {
   document.querySelector('#retry-app')?.addEventListener('click', () => location.reload());
 }
 
-loadMembers().then(route).catch(showFatal);
+Promise.all([loadMembers(), loadTaxonomy()]).then(route).catch(showFatal);
