@@ -64,4 +64,8 @@ function showFatal(error) {
   document.querySelector('#retry-app')?.addEventListener('click', () => location.reload());
 }
 
-Promise.all([loadMembers(), loadTaxonomy()]).then(route).catch(showFatal);
+Promise.all([loadMembers(), loadTaxonomy()]).then(async () => {
+  const { warnings = [] } = await api('/api/health');
+  warnings.forEach((warning) => showToast(warning.message, 'info'));
+  await route();
+}).catch(showFatal);

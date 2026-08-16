@@ -30,34 +30,47 @@ class TongueService {
     const members = (await this.repository.read('family')).members;
     if (!members.some((member) => member.id === input.memberId)) throw new ServiceError('NOT_FOUND', '未找到家庭成员', 404);
     const now = this.clock();
-    const photoPath = file && this.uploadStore.save ? await this.uploadStore.save(file) : (input.photoPath || '');
-    const record = validateTongueRecord({
+    const draft = validateTongueRecord({
       ...input,
       id: this.idGenerator(),
-      photoPath,
+      photoPath: input.photoPath || '',
       status: 'draft',
       confirmedAt: null,
       createdAt: now,
       updatedAt: now,
     });
-    await this.repository.update('tongue-records', (data) => ({ ...data, records: [...data.records, record] }));
-    return record;
+    let savedPhoto = '';
+    try {
+      savedPhoto = file && this.uploadStore.save ? await this.uploadStore.save(file) : '';
+      const record = { ...draft, photoPath: savedPhoto || draft.photoPath };
+      await this.repository.update('tongue-records', (data) => ({ ...data, records: [...data.records, record] }));
+      return record;
+    } catch (error) {
+      if (savedPhoto) await this.uploadStore.remove(savedPhoto);
+      throw error;
+    }
   }
 
   async update(id, patch, file) {
     if (Object.prototype.hasOwnProperty.call(patch, 'status')) throw new ServiceError('VALIDATION_ERROR', '请使用状态操作按钮', 400);
     const current = await this.get(id);
     const now = this.clock();
-    const nextPhoto = file && this.uploadStore.save ? await this.uploadStore.save(file) : current.photoPath;
-    const merged = { ...current, ...patch, id, photoPath: nextPhoto, updatedAt: now };
+    const merged = { ...current, ...patch, id, photoPath: current.photoPath, updatedAt: now };
     if (merged.status === 'active' && (!String(merged.doctorConclusion || '').trim() || !(merged.confirmedTags || []).length)) {
       merged.status = 'draft';
       merged.confirmedAt = null;
     }
-    const record = validateTongueRecord(merged);
-    await this._saveAndInvalidate(record);
-    if (file && current.photoPath && current.photoPath !== nextPhoto) await this.uploadStore.remove(current.photoPath);
-    return record;
+    const validated = validateTongueRecord(merged);
+    let savedPhoto = '';
+    try {
+      savedPhoto = file && this.uploadStore.save ? await this.uploadStore.save(file) : '';
+      const record = { ...validated, photoPath: savedPhoto || current.photoPath };
+      await this._saveAndInvalidate(record, savedPhoto && current.photoPath ? [current.photoPath] : []);
+      return record;
+    } catch (error) {
+      if (savedPhoto) await this.uploadStore.remove(savedPhoto);
+      throw error;
+    }
   }
 
   async confirm(id) {
@@ -88,32 +101,44 @@ class TongueService {
   }
 
   async remove(id) {
-    const current = await this.get(id);
-    const data = await this.repository.read('tongue-records');
-    await this.repository.write('tongue-records', { ...data, records: data.records.filter((record) => record.id !== id) });
-    await this._invalidate(current.memberId);
-    await this.uploadStore.remove(current.photoPath);
-  }
-
-  async _saveAndInvalidate(record) {
-    const [tongue, history] = await Promise.all([
-      this.repository.read('tongue-records'),
-      this.repository.read('recommendation-history'),
-    ]);
-    await this.repository.writeBatch({
-      'tongue-records': { ...tongue, records: tongue.records.map((entry) => entry.id === record.id ? record : entry) },
-      'recommendation-history': {
-        ...history,
-        entries: history.entries.map((entry) => entry.memberIds.includes(record.memberId) && entry.status === 'active' ? { ...entry, status: 'superseded' } : entry),
-      },
+    return this.repository.transaction(['tongue-records', 'recommendation-history'], (stores) => {
+      const tongue = stores['tongue-records'];
+      const history = stores['recommendation-history'];
+      const current = tongue.records.find((record) => record.id === id);
+      if (!current) throw new ServiceError('NOT_FOUND', '未找到舌象记录', 404);
+      return {
+        changes: {
+          'tongue-records': { ...tongue, records: tongue.records.filter((record) => record.id !== id) },
+          'recommendation-history': {
+            ...history,
+            entries: history.entries.map((entry) => entry.memberIds.includes(current.memberId) && entry.status === 'active' ? { ...entry, status: 'superseded' } : entry),
+          },
+        },
+        fileMoves: current.photoPath ? [current.photoPath] : [],
+      };
     });
   }
 
-  async _invalidate(memberId) {
-    await this.repository.update('recommendation-history', (history) => ({
-      ...history,
-      entries: history.entries.map((entry) => entry.memberIds.includes(memberId) && entry.status === 'active' ? { ...entry, status: 'superseded' } : entry),
-    }));
+  async _saveAndInvalidate(record, fileMoves = []) {
+    return this.repository.transaction(['tongue-records', 'recommendation-history'], (stores) => {
+      if (!stores['tongue-records'].records.some((entry) => entry.id === record.id)) {
+        throw new ServiceError('NOT_FOUND', '未找到舌象记录', 404);
+      }
+      return {
+        changes: {
+          'tongue-records': {
+            ...stores['tongue-records'],
+            records: stores['tongue-records'].records.map((entry) => entry.id === record.id ? record : entry),
+          },
+          'recommendation-history': {
+            ...stores['recommendation-history'],
+            entries: stores['recommendation-history'].entries.map((entry) => entry.memberIds.includes(record.memberId) && entry.status === 'active' ? { ...entry, status: 'superseded' } : entry),
+          },
+        },
+        fileMoves,
+        result: record,
+      };
+    });
   }
 }
 

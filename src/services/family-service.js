@@ -30,34 +30,40 @@ class FamilyService {
   }
 
   async update(id, input) {
-    const current = await this.get(id);
-    const member = validateMember({ ...current, ...input, id });
-    const family = await this.repository.read('family');
-    const history = await this.repository.read('recommendation-history');
-    await this.repository.writeBatch({
-      family: { ...family, members: family.members.map((entry) => entry.id === id ? member : entry) },
-      'recommendation-history': {
-        ...history,
-        entries: history.entries.map((entry) => entry.memberIds.includes(id) && entry.status === 'active' ? { ...entry, status: 'superseded' } : entry),
-      },
+    return this.repository.transaction(['family', 'recommendation-history'], ({ family, 'recommendation-history': history }) => {
+      const current = family.members.find((member) => member.id === id);
+      if (!current) throw new ServiceError('NOT_FOUND', '未找到家庭成员', 404);
+      const member = validateMember({ ...current, ...input, id });
+      return {
+        changes: {
+          family: { ...family, members: family.members.map((entry) => entry.id === id ? member : entry) },
+          'recommendation-history': {
+            ...history,
+            entries: history.entries.map((entry) => entry.memberIds.includes(id) && entry.status === 'active' ? { ...entry, status: 'superseded' } : entry),
+          },
+        },
+        result: member,
+      };
     });
-    return member;
   }
 
   async remove(id) {
-    await this.get(id);
-    const [family, tongue, history] = await Promise.all([
-      this.repository.read('family'),
-      this.repository.read('tongue-records'),
-      this.repository.read('recommendation-history'),
-    ]);
-    const related = tongue.records.filter((record) => record.memberId === id);
-    await this.repository.writeBatch({
-      family: { ...family, members: family.members.filter((member) => member.id !== id) },
-      'tongue-records': { ...tongue, records: tongue.records.filter((record) => record.memberId !== id) },
-      'recommendation-history': { ...history, entries: history.entries.filter((entry) => !entry.memberIds.includes(id)) },
+    return this.repository.transaction(['family', 'tongue-records', 'recommendation-history'], (stores) => {
+      const family = stores.family;
+      const tongue = stores['tongue-records'];
+      const history = stores['recommendation-history'];
+      if (!family.members.some((member) => member.id === id)) throw new ServiceError('NOT_FOUND', '未找到家庭成员', 404);
+      if (family.members.length <= 1) throw new ServiceError('LAST_MEMBER', '家庭档案至少保留一名成员', 409);
+      const related = tongue.records.filter((record) => record.memberId === id);
+      return {
+        changes: {
+          family: { ...family, members: family.members.filter((member) => member.id !== id) },
+          'tongue-records': { ...tongue, records: tongue.records.filter((record) => record.memberId !== id) },
+          'recommendation-history': { ...history, entries: history.entries.filter((entry) => !entry.memberIds.includes(id)) },
+        },
+        fileMoves: related.map((record) => record.photoPath).filter(Boolean),
+      };
     });
-    for (const record of related) await this.uploadStore.remove(record.photoPath);
   }
 }
 

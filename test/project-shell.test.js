@@ -11,6 +11,7 @@ test('package exposes local start, dev, and test scripts', () => {
   assert.strictEqual(packageJson.scripts.start, 'node src/server.js');
   assert.strictEqual(packageJson.scripts.dev, 'node src/server.js');
   assert.strictEqual(packageJson.scripts.test, 'node test/run.js');
+  assert.strictEqual(packageJson.engines.node, '>=14.14');
 });
 
 test('test runner exits non-zero when a test fails', () => {

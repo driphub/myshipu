@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const { rankPlanPairs, memberSafetyFlags } = require('../domain/recommendation-engine');
-const { LABELS } = require('../domain/taxonomy');
+const { LABELS, CONFIRMED_TAG_TO_NEED } = require('../domain/taxonomy');
 const { ServiceError } = require('./errors');
 
 function randomId() {
@@ -34,46 +34,49 @@ class RecommendationService {
   }
 
   async _resolve({ date, scope, rotate }) {
-    const [family, recipes, teas, tongue, history] = await Promise.all([
-      this.repository.read('family'),
-      this.repository.read('recipes'),
-      this.repository.read('teas'),
-      this.repository.read('tongue-records'),
-      this.repository.read('recommendation-history'),
-    ]);
-    const members = await this._scopeMembers(scope, family.members);
-    const scopeKey = this._scopeKey(scope, members);
-    const activeRecords = this._activeTongueRecords(members, tongue.records);
-    const confirmedTagsByMember = Object.fromEntries(activeRecords.map((record) => [record.memberId, record.confirmedTags]));
-    const inputFingerprint = stableHash({
-      members,
-      records: activeRecords.map((record) => ({ id: record.id, memberId: record.memberId, confirmedAt: record.confirmedAt, confirmedTags: record.confirmedTags })),
-      recipeVersion: recipes.version,
-      teaVersion: teas.version,
+    const storeNames = ['family', 'recipes', 'teas', 'tongue-records', 'recommendation-history'];
+    return this.repository.transaction(storeNames, async (stores) => {
+      const family = stores.family;
+      const recipes = stores.recipes;
+      const teas = stores.teas;
+      const tongue = stores['tongue-records'];
+      const history = stores['recommendation-history'];
+      const members = await this._scopeMembers(scope, family.members);
+      const scopeKey = this._scopeKey(scope, members);
+      const activeRecords = this._activeTongueRecords(members, tongue.records);
+      const confirmedTagsByMember = Object.fromEntries(activeRecords.map((record) => [record.memberId, record.confirmedTags]));
+      const inputFingerprint = stableHash({
+        members,
+        records: activeRecords.map((record) => ({ id: record.id, memberId: record.memberId, confirmedAt: record.confirmedAt, confirmedTags: record.confirmedTags })),
+        recipeVersion: recipes.version,
+        teaVersion: teas.version,
+      });
+      const plans = rankPlanPairs({ members, recipes: recipes.items, teas: teas.items, date, confirmedTagsByMember });
+      const relevant = history.entries.filter((entry) => entry.date === date && entry.scopeKey === scopeKey);
+      const active = relevant.find((entry) => entry.status === 'active');
+
+      if (!rotate && active && active.inputFingerprint === inputFingerprint) {
+        const existing = plans.find((plan) => plan.recipe.id === active.recipeId && plan.tea.id === active.teaId);
+        if (existing) return { result: this._present(existing, active, members, confirmedTagsByMember) };
+      }
+
+      const excluded = rotate ? new Set(relevant.map((entry) => `${entry.recipeId}:${entry.teaId}`)) : new Set();
+      const selected = plans.find((plan) => !excluded.has(`${plan.recipe.id}:${plan.tea.id}`));
+      if (!selected) throw new ServiceError('NO_ALTERNATIVE', '本范围暂无更多安全候选', 409);
+      const sequence = relevant.reduce((max, entry) => Math.max(max, entry.sequence || 0), 0) + 1;
+      const entry = {
+        id: this.idGenerator(), date, scopeKey, memberIds: members.map((member) => member.id), inputFingerprint,
+        recipeId: selected.recipe.id, teaId: selected.tea.id, status: 'active', sequence, createdAt: this.clock(),
+      };
+      const entries = history.entries.map((item) => item.date === date && item.scopeKey === scopeKey && item.status === 'active'
+        ? { ...item, status: 'superseded' }
+        : item);
+      entries.push(entry);
+      return {
+        changes: { 'recommendation-history': { ...history, entries } },
+        result: this._present(selected, entry, members, confirmedTagsByMember),
+      };
     });
-    const plans = rankPlanPairs({ members, recipes: recipes.items, teas: teas.items, date, confirmedTagsByMember });
-    const relevant = history.entries.filter((entry) => entry.date === date && entry.scopeKey === scopeKey);
-    const active = relevant.find((entry) => entry.status === 'active');
-
-    if (!rotate && active && active.inputFingerprint === inputFingerprint) {
-      const existing = plans.find((plan) => plan.recipe.id === active.recipeId && plan.tea.id === active.teaId);
-      if (existing) return this._present(existing, active, members);
-    }
-
-    const excluded = rotate ? new Set(relevant.map((entry) => `${entry.recipeId}:${entry.teaId}`)) : new Set();
-    const selected = plans.find((plan) => !excluded.has(`${plan.recipe.id}:${plan.tea.id}`));
-    if (!selected) throw new ServiceError('NO_ALTERNATIVE', '本范围暂无更多安全候选', 409);
-    const sequence = relevant.reduce((max, entry) => Math.max(max, entry.sequence || 0), 0) + 1;
-    const entry = {
-      id: this.idGenerator(), date, scopeKey, memberIds: members.map((member) => member.id), inputFingerprint,
-      recipeId: selected.recipe.id, teaId: selected.tea.id, status: 'active', sequence, createdAt: this.clock(),
-    };
-    const entries = history.entries.map((item) => item.date === date && item.scopeKey === scopeKey && item.status === 'active'
-      ? { ...item, status: 'superseded' }
-      : item);
-    entries.push(entry);
-    await this.repository.write('recommendation-history', { ...history, entries });
-    return this._present(selected, entry, members);
   }
 
   async _scopeMembers(scope, allMembers) {
@@ -96,9 +99,13 @@ class RecommendationService {
       .filter(Boolean);
   }
 
-  _present(plan, entry, members) {
+  _present(plan, entry, members, confirmedTagsByMember = {}) {
+    const memberNeeds = new Set(members.flatMap((member) => [
+      ...member.needTags,
+      ...(confirmedTagsByMember[member.id] || []).map((tag) => CONFIRMED_TAG_TO_NEED[tag]).filter(Boolean),
+    ]));
     const matchedNeeds = [...new Set(plan.recipe.needTags.concat(plan.tea.needTags))]
-      .filter((tag) => members.some((member) => member.needTags.includes(tag)));
+      .filter((tag) => memberNeeds.has(tag));
     const warnings = [];
     for (const member of members) {
       for (const candidate of [plan.recipe, plan.tea]) {

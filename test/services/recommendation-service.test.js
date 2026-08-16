@@ -39,3 +39,34 @@ test('never recommends medicinal tea to a child scope', async () => {
   assert.strictEqual(plan.tea.medicinalTea, false);
   context.cleanup();
 });
+
+test('explains needs contributed by the latest confirmed tongue record', async () => {
+  const context = await createTestRepository();
+  await context.repository.update('tongue-records', (data) => ({
+    ...data,
+    records: [{
+      id: 'tongue-confirmed', memberId: 'member-zhou', observedAt: '2026-08-16', photoPath: '',
+      observations: { color: 'pink', coating: 'white', thickness: 'thick', moisture: 'normal' },
+      doctorConclusion: '医生确认湿重倾向', confirmedTags: ['dampness-tendency'], status: 'active',
+      confirmedAt: '2026-08-16T08:00:00.000Z', createdAt: '2026-08-16T08:00:00.000Z', updatedAt: '2026-08-16T08:00:00.000Z',
+    }],
+  }));
+  const service = new RecommendationService({ repository: context.repository });
+  const plan = await service.get({ date: '2026-08-16', scope: 'member:member-zhou' });
+  assert.ok(plan.reasons.includes('健脾养胃'));
+  context.cleanup();
+});
+
+test('preserves recommendation history from concurrent scopes', async () => {
+  const context = await createTestRepository();
+  let id = 0;
+  const service = new RecommendationService({ repository: context.repository, idGenerator: () => `concurrent-${++id}` });
+  await Promise.all([
+    service.get({ date: '2026-08-16', scope: 'all' }),
+    service.get({ date: '2026-08-16', scope: 'member:member-lin' }),
+  ]);
+  const entries = (await context.repository.read('recommendation-history')).entries;
+  assert.strictEqual(entries.length, 2);
+  assert.strictEqual(new Set(entries.map((entry) => entry.scopeKey)).size, 2);
+  context.cleanup();
+});

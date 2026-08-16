@@ -48,6 +48,10 @@ test('recovers a corrupt primary file from its last backup', async () => {
   const family = await repository.read('family');
   assert.strictEqual(family.recoveredValue, undefined);
   assert.strictEqual(family.members.length, 3);
+  assert.deepStrictEqual(
+    JSON.parse(fs.readFileSync(path.join(dataDir, 'family.json'), 'utf8')),
+    family
+  );
   assert.strictEqual(repository.consumeWarnings()[0].code, 'RECOVERED_FROM_BACKUP');
   fs.rmSync(dataDir, { recursive: true, force: true });
 });
@@ -64,5 +68,42 @@ test('failed validation leaves the previous file untouched', async () => {
 
   await assert.rejects(() => repository.write('family', { members: null }), /invalid family/);
   assert.strictEqual(fs.readFileSync(path.join(dataDir, 'family.json'), 'utf8'), before);
+  fs.rmSync(dataDir, { recursive: true, force: true });
+});
+
+test('all seeded visual assets use the public assets path', () => {
+  const seed = createSeedData();
+  for (const item of [...seed.recipes.items, ...seed.teas.items]) {
+    assert.ok(item.image.startsWith('assets/images/'), `${item.id}: ${item.image}`);
+  }
+});
+
+test('commits json changes and staged upload removals together', async () => {
+  const dataDir = tempDataDir();
+  const repository = new JsonRepository({ dataDir, seedData: createSeedData() });
+  await repository.init();
+  const photo = path.join(dataDir, 'uploads', 'staged.webp');
+  fs.writeFileSync(photo, 'image');
+  const family = await repository.read('family');
+  await repository.writeBatch({ family: { ...family, marker: 'committed' } }, ['uploads/staged.webp']);
+  assert.strictEqual((await repository.read('family')).marker, 'committed');
+  assert.strictEqual(fs.existsSync(photo), false);
+  assert.deepStrictEqual(fs.readdirSync(path.join(dataDir, '.trash')), []);
+  fs.rmSync(dataDir, { recursive: true, force: true });
+});
+
+test('recovers a structurally invalid primary file from backup', async () => {
+  const dataDir = tempDataDir();
+  const repository = new JsonRepository({
+    dataDir,
+    seedData: createSeedData(),
+    validators: { family: (value) => { if (!Array.isArray(value.members)) throw new Error('invalid family'); } },
+  });
+  await repository.init();
+  await repository.update('family', (family) => ({ ...family, marker: 'newer' }));
+  fs.writeFileSync(path.join(dataDir, 'family.json'), '{"version":1,"members":null}\n', 'utf8');
+  const recovered = await repository.read('family');
+  assert.ok(Array.isArray(recovered.members));
+  assert.ok(Array.isArray(JSON.parse(fs.readFileSync(path.join(dataDir, 'family.json'), 'utf8')).members));
   fs.rmSync(dataDir, { recursive: true, force: true });
 });

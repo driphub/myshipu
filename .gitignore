@@ -1,5 +1,6 @@
 .worktrees/
 data/uploads/
 data/.transaction.json
+data/*.json
 data/*.bak
 .DS_Store
