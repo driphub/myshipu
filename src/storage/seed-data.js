@@ -1,18 +1,20 @@
 function recipe(id, name, ingredients, needTags, preferenceTags, seasonTags, extra = {}) {
+  const { image = 'yam-soup.jpg', ...overrides } = extra;
   return {
     id, name, type: 'recipe', ingredients, needTags, preferenceTags, seasonTags,
     hardContraindications: [], cautionFlags: [], duration: '35分钟', mealTime: '午餐或晚餐',
     benefits: needTags, steps: ['食材洗净并按标注切配', '加水或少量油烹制至熟', '少盐调味后温热食用'],
-    image: `assets/images/${extra.image || 'yam-soup.jpg'}`, ...extra,
+    image: `assets/images/${image}`, ...overrides,
   };
 }
 
 function tea(id, name, ingredients, needTags, seasonTags, extra = {}) {
+  const { image = 'herbal-tea.jpg', ...overrides } = extra;
   return {
     id, name, type: 'tea', ingredients, needTags, preferenceTags: ['mild'], seasonTags,
     hardContraindications: [], cautionFlags: [], medicinalTea: true, amount: '每次300ml',
     timing: '餐后温饮', benefits: needTags, steps: ['材料冲洗后放入杯中', '沸水焖泡10分钟后温饮'],
-    image: `assets/images/${extra.image || 'herbal-tea.jpg'}`, ...extra,
+    image: `assets/images/${image}`, ...overrides,
   };
 }
 

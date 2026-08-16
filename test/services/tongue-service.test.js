@@ -41,3 +41,39 @@ test('moves a tongue record through draft, active, archived, and restored states
   assert.strictEqual(downgraded.status, 'draft');
   context.cleanup();
 });
+
+test('does not leave an uploaded photo when draft validation fails', async () => {
+  const context = await createTestRepository();
+  const uploadStore = new UploadStore({ dataDir: context.dataDir, idGenerator: () => 'orphan' });
+  const service = new TongueService({ repository: context.repository, uploadStore });
+  await assert.rejects(() => service.create({
+    memberId: 'member-lin', observedAt: '', observations, doctorConclusion: '', confirmedTags: [],
+  }, { buffer: Buffer.from('image'), mimeType: 'image/webp' }), (error) => error.code === 'VALIDATION_ERROR');
+  assert.deepStrictEqual(fs.readdirSync(path.join(context.dataDir, 'uploads')), []);
+  context.cleanup();
+});
+
+test('rejects an update when the record is deleted before its transaction commits', async () => {
+  const context = await createTestRepository();
+  let releaseSave;
+  let saveStarted;
+  const started = new Promise((resolve) => { saveStarted = resolve; });
+  const removed = [];
+  const uploadStore = {
+    save: async () => {
+      saveStarted();
+      await new Promise((resolve) => { releaseSave = resolve; });
+      return 'uploads/new.webp';
+    },
+    remove: async (photoPath) => removed.push(photoPath),
+  };
+  const service = new TongueService({ repository: context.repository, uploadStore, idGenerator: () => 'tongue-race' });
+  const record = await service.create({ memberId: 'member-lin', observedAt: '2026-08-16', observations, doctorConclusion: '', confirmedTags: [] });
+  const updating = service.update(record.id, { doctorConclusion: '稍后提交' }, { buffer: Buffer.from('image'), mimeType: 'image/webp' });
+  await started;
+  await service.remove(record.id);
+  releaseSave();
+  await assert.rejects(() => updating, (error) => error.code === 'NOT_FOUND');
+  assert.deepStrictEqual(removed, ['uploads/new.webp']);
+  context.cleanup();
+});

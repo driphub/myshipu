@@ -3,6 +3,7 @@ const path = require('path');
 const { URL } = require('url');
 const { JsonRepository } = require('../storage/json-repository');
 const { createSeedData } = require('../storage/seed-data');
+const { STORE_VALIDATORS } = require('../storage/store-validators');
 const { UploadStore } = require('../storage/upload-store');
 const { FamilyService } = require('../services/family-service');
 const { TongueService } = require('../services/tongue-service');
@@ -33,7 +34,7 @@ function decodeJsonField(value, fallback) {
 }
 
 function createApp({ dataDir, publicDir }) {
-  const repository = new JsonRepository({ dataDir, seedData: createSeedData() });
+  const repository = new JsonRepository({ dataDir, seedData: createSeedData(), validators: STORE_VALIDATORS });
   const uploadStore = new UploadStore({ dataDir });
   const familyService = new FamilyService({ repository, uploadStore });
   const tongueService = new TongueService({ repository, uploadStore });
@@ -50,7 +51,9 @@ function createApp({ dataDir, publicDir }) {
     const pathname = url.pathname;
     let match;
 
-    if (pathname === '/api/health' && method === 'GET') return json(response, 200, { status: 'ok' });
+    if (pathname === '/api/health' && method === 'GET') {
+      return json(response, 200, { status: 'ok', warnings: repository.consumeWarnings() });
+    }
     if (pathname === '/api/taxonomy' && method === 'GET') {
       const { TAXONOMY, LABELS } = require('../domain/taxonomy');
       return json(response, 200, { taxonomy: TAXONOMY, labels: LABELS });
@@ -110,7 +113,20 @@ function createApp({ dataDir, publicDir }) {
     if ((match = pathname.match(/^\/api\/tongue-records\/([^/]+)$/))) {
       const id = decodeURIComponent(match[1]);
       if (method === 'GET') return json(response, 200, { record: await tongueService.get(id) });
-      if (method === 'PATCH') return json(response, 200, { record: await tongueService.update(id, await parseJson(request)) });
+      if (method === 'PATCH') {
+        if ((request.headers['content-type'] || '').toLowerCase().startsWith('multipart/form-data')) {
+          const { fields, file } = await parseMultipart(request);
+          const input = {
+            ...fields,
+            observations: decodeJsonField(fields.observations, undefined),
+            confirmedTags: decodeJsonField(fields.confirmedTags, undefined),
+          };
+          if (input.observations === undefined) delete input.observations;
+          if (input.confirmedTags === undefined) delete input.confirmedTags;
+          return json(response, 200, { record: await tongueService.update(id, input, file) });
+        }
+        return json(response, 200, { record: await tongueService.update(id, await parseJson(request)) });
+      }
       if (method === 'DELETE') { await tongueService.remove(id); return noContent(response); }
     }
     throw new ServiceError('NOT_FOUND', '未找到请求的资源', 404);

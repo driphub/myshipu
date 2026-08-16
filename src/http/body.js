@@ -4,17 +4,19 @@ function readBody(request, maxBytes) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     let size = 0;
+    let settled = false;
     request.on('data', (chunk) => {
+      if (settled) return;
       size += chunk.length;
       if (size > maxBytes) {
+        settled = true;
         reject(new ServiceError('PAYLOAD_TOO_LARGE', '请求内容过大', 413));
-        request.destroy();
         return;
       }
       chunks.push(chunk);
     });
-    request.on('end', () => resolve(Buffer.concat(chunks)));
-    request.on('error', reject);
+    request.on('end', () => { if (!settled) resolve(Buffer.concat(chunks)); });
+    request.on('error', (error) => { if (!settled) reject(error); });
   });
 }
 

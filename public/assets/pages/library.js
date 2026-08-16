@@ -28,7 +28,8 @@ export async function renderLibrary({ mount, api, taxonomy, labels, showToast })
   async function openDetail(itemType, id) {
     try {
       const { item } = await api(`/api/library/${itemType}/${id}`);
-      dialog.innerHTML = `<div class="detail-hero"><img src="/${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}"><button class="icon-button close-on-image" aria-label="关闭">×</button></div><div class="detail-content"><span class="type-label">${item.type === 'recipe' ? '药膳菜谱' : '食养茶饮'}</span><h2>${escapeHtml(item.name)}</h2><h3>材料</h3><ul class="ingredient-list">${item.ingredients.map((ingredient) => `<li><span>${escapeHtml(ingredient.name)}</span><b>${escapeHtml(ingredient.amount)}</b></li>`).join('')}</ul><h3>做法</h3><ol class="steps">${item.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ol>${item.cautionFlags.length ? `<div class="warning-banner"><strong>慎用</strong><span>${item.cautionFlags.map(escapeHtml).join('、')}</span></div>` : ''}</div>`;
+      const teaMeta = item.type === 'tea' ? `<dl><div><dt>每次用量</dt><dd>${escapeHtml(item.amount)}</dd></div><div><dt>饮用时间</dt><dd>${escapeHtml(item.timing)}</dd></div></dl>` : '';
+      dialog.innerHTML = `<div class="detail-hero"><img src="/${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}"><button class="icon-button close-on-image" aria-label="关闭">×</button></div><div class="detail-content"><span class="type-label">${item.type === 'recipe' ? '药膳菜谱' : '食养茶饮'}</span><h2>${escapeHtml(item.name)}</h2>${teaMeta}<h3>材料</h3><ul class="ingredient-list">${item.ingredients.map((ingredient) => `<li><span>${escapeHtml(ingredient.name)}</span><b>${escapeHtml(ingredient.amount)}</b></li>`).join('')}</ul><h3>做法</h3><ol class="steps">${item.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ol>${item.cautionFlags.length ? `<div class="warning-banner"><strong>慎用</strong><span>${item.cautionFlags.map(escapeHtml).join('、')}</span></div>` : ''}</div>`;
       dialog.querySelector('button').addEventListener('click', () => dialog.close());
       dialog.showModal();
     } catch (error) { showToast(error.message, 'error'); }
@@ -43,4 +44,9 @@ export async function renderLibrary({ mount, api, taxonomy, labels, showToast })
     load();
   }));
   await load();
+  try {
+    const pending = JSON.parse(sessionStorage.getItem('mingyuan-library-item') || 'null');
+    sessionStorage.removeItem('mingyuan-library-item');
+    if (pending?.type && pending?.id) await openDetail(pending.type, pending.id);
+  } catch (_) { sessionStorage.removeItem('mingyuan-library-item'); }
 }

@@ -12,7 +12,7 @@ async function withServer(fn) {
   const server = http.createServer(app.handler);
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   const baseUrl = `http://127.0.0.1:${server.address().port}`;
-  try { await fn(baseUrl); } finally {
+  try { await fn(baseUrl, { app, dataDir }); } finally {
     await new Promise((resolve) => server.close(resolve));
     fs.rmSync(dataDir, { recursive: true, force: true });
   }
@@ -83,11 +83,22 @@ test('supports tongue draft upload and explicit state actions', async () => with
   }
   multipart += `--${boundary}\r\nContent-Disposition: form-data; name="photo"; filename="tongue.webp"\r\nContent-Type: image/webp\r\n\r\nimage\r\n--${boundary}--\r\n`;
   const created = await request(baseUrl, '/api/tongue-records', {
-    method: 'POST', headers: { 'content-type': `multipart/form-data; boundary=${boundary}` }, body: Buffer.from(multipart, 'latin1'),
+    method: 'POST', headers: { 'content-type': `multipart/form-data; boundary=${boundary}` }, body: Buffer.from(multipart, 'utf8'),
   });
   assert.strictEqual(created.status, 201);
   assert.strictEqual(created.body.record.status, 'draft');
   const id = created.body.record.id;
+  const patchBody =
+    `--${boundary}\r\nContent-Disposition: form-data; name="observedAt"\r\n\r\n2026-08-17\r\n` +
+    `--${boundary}\r\nContent-Disposition: form-data; name="observations"\r\n\r\n${fields.observations}\r\n` +
+    `--${boundary}\r\nContent-Disposition: form-data; name="doctorConclusion"\r\n\r\n复诊后补录\r\n` +
+    `--${boundary}\r\nContent-Disposition: form-data; name="confirmedTags"\r\n\r\n${fields.confirmedTags}\r\n` +
+    `--${boundary}--\r\n`;
+  const edited = await request(baseUrl, `/api/tongue-records/${id}`, {
+    method: 'PATCH', headers: { 'content-type': `multipart/form-data; boundary=${boundary}` }, body: Buffer.from(patchBody, 'utf8'),
+  });
+  assert.strictEqual(edited.status, 200);
+  assert.strictEqual(edited.body.record.doctorConclusion, '复诊后补录');
   assert.strictEqual((await request(baseUrl, `/api/tongue-records/${id}/confirm`, { method: 'POST' })).body.record.status, 'active');
   assert.strictEqual((await request(baseUrl, `/api/tongue-records/${id}/archive`, { method: 'POST' })).body.record.status, 'archived');
   assert.strictEqual((await request(baseUrl, `/api/tongue-records/${id}/restore`, { method: 'POST' })).body.record.status, 'active');
@@ -100,4 +111,46 @@ test('rejects static path traversal and returns not-found envelopes', async () =
   const missing = await request(baseUrl, '/api/family/missing');
   assert.strictEqual(missing.status, 404);
   assert.strictEqual(missing.body.code, 'NOT_FOUND');
+}));
+
+test('returns a structured 413 response for oversized json', async () => withServer(async (baseUrl) => {
+  const oversized = await request(baseUrl, '/api/family', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ notes: 'x'.repeat(1024 * 1024) }),
+  });
+  assert.strictEqual(oversized.status, 413);
+  assert.strictEqual(oversized.body.code, 'PAYLOAD_TOO_LARGE');
+}));
+
+test('production repository recovers structurally invalid family data', async () => withServer(async (baseUrl, { app, dataDir }) => {
+  await app.repository.update('family', (family) => ({ ...family, marker: 'newer' }));
+  fs.writeFileSync(path.join(dataDir, 'family.json'), '{"version":1,"members":null}\n', 'utf8');
+  const response = await request(baseUrl, '/api/family');
+  assert.strictEqual(response.status, 200);
+  assert.ok(Array.isArray(response.body.members));
+  const health = await request(baseUrl, '/api/health');
+  assert.strictEqual(health.body.warnings[0].code, 'RECOVERED_FROM_BACKUP');
+}));
+
+test('returns 415 for unsupported photos and 422 when no safe plan exists', async () => withServer(async (baseUrl, { app }) => {
+  const boundary = 'error-contract-boundary';
+  const multipart =
+    `--${boundary}\r\nContent-Disposition: form-data; name="memberId"\r\n\r\nmember-lin\r\n` +
+    `--${boundary}\r\nContent-Disposition: form-data; name="observedAt"\r\n\r\n2026-08-16\r\n` +
+    `--${boundary}\r\nContent-Disposition: form-data; name="observations"\r\n\r\n{"color":"pink","coating":"white","thickness":"thin","moisture":"normal"}\r\n` +
+    `--${boundary}\r\nContent-Disposition: form-data; name="photo"; filename="note.txt"\r\nContent-Type: text/plain\r\n\r\nnot-an-image\r\n` +
+    `--${boundary}--\r\n`;
+  const unsupported = await request(baseUrl, '/api/tongue-records', {
+    method: 'POST', headers: { 'content-type': `multipart/form-data; boundary=${boundary}` }, body: multipart,
+  });
+  assert.strictEqual(unsupported.status, 415);
+  assert.strictEqual(unsupported.body.code, 'UNSUPPORTED_MEDIA_TYPE');
+
+  const recipes = await app.repository.read('recipes');
+  await app.repository.write('recipes', { ...recipes, items: [] });
+  const unavailable = await request(baseUrl, '/api/recommendations?date=2026-08-16&scope=all');
+  assert.strictEqual(unavailable.status, 422);
+  assert.strictEqual(unavailable.body.code, 'NO_SAFE_PLAN');
+  assert.deepStrictEqual(unavailable.body.details.missing, ['recipe']);
 }));

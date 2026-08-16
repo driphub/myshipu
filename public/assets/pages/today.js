@@ -14,11 +14,18 @@ function memberSelector(members, scope) {
   return `<label class="mobile-member-select">推荐范围<select id="mobile-scope">${options.join('')}</select></label>`;
 }
 
-function sidebar(members, scope) {
+function sidebar(members, scope, records) {
+  const scopedMembers = members.filter((member) => scope === 'all' || scope === `member:${member.id}`);
+  const latestRows = scopedMembers.map((member) => {
+    const record = records.filter((entry) => entry.memberId === member.id)
+      .sort((left, right) => String(right.observedAt).localeCompare(String(left.observedAt)))[0];
+    return `<li><span>${escapeHtml(member.name)}</span><small>${record ? `${escapeHtml(record.observedAt)} · ${escapeHtml({ draft: '待确认', active: '已确认', archived: '已归档' }[record.status] || record.status)}` : '暂无记录'}</small></li>`;
+  }).join('');
   return `<aside class="member-sidebar"><p class="section-label">推荐范围</p>
     <button class="member-choice ${scope === 'all' ? 'active' : ''}" data-scope="all"><span class="avatar">全</span><span><strong>全家方案</strong><small>${members.length} 人综合适配</small></span></button>
     ${members.map((member) => `<button class="member-choice ${scope === `member:${member.id}` ? 'active' : ''}" data-scope="member:${escapeHtml(member.id)}"><span class="avatar">${escapeHtml(member.name.slice(0, 1))}</span><span><strong>${escapeHtml(member.name)}</strong><small>${member.needTags.length} 项健康目标</small></span></button>`).join('')}
     <a class="manage-link" href="#family">＋ 管理家庭成员</a>
+    <div class="sidebar-note"><p><strong>最近舌象</strong></p><ul>${latestRows}</ul><a href="#tongue">查看全部记录</a></div>
     <div class="sidebar-note"><span aria-hidden="true">◎</span><p><strong>记录会影响新推荐</strong><br>只有医生确认的舌象标签参与匹配。</p></div>
   </aside>`;
 }
@@ -47,7 +54,9 @@ function planMarkup(plan, members) {
 export async function renderToday({ mount, api, members, showToast }) {
   let scope = sessionStorage.getItem('mingyuan-scope') || 'all';
   if (scope !== 'all' && !members.some((member) => scope === `member:${member.id}`)) scope = 'all';
-  mount.innerHTML = `<div class="today-layout">${sidebar(members, scope)}<section class="today-main">${memberSelector(members, scope)}<div id="plan-content" class="page-loading" aria-live="polite">正在生成安全食养方案…</div></section></div>`;
+  let tongueRecords = [];
+  try { tongueRecords = (await api('/api/tongue-records')).records; } catch (_) {}
+  mount.innerHTML = `<div class="today-layout">${sidebar(members, scope, tongueRecords)}<section class="today-main">${memberSelector(members, scope)}<div id="plan-content" class="page-loading" aria-live="polite">正在生成安全食养方案…</div></section></div>`;
   const content = mount.querySelector('#plan-content');
 
   async function load(rotate = false) {
@@ -60,6 +69,10 @@ export async function renderToday({ mount, api, members, showToast }) {
       content.className = '';
       content.innerHTML = planMarkup(plan, members.filter((member) => scope === 'all' || scope === `member:${member.id}`));
       content.querySelector('#rotate-plan')?.addEventListener('click', () => load(true));
+      content.querySelector('[data-library-id]')?.addEventListener('click', (event) => {
+        sessionStorage.setItem('mingyuan-library-item', JSON.stringify({ type: 'recipe', id: event.currentTarget.dataset.libraryId }));
+        location.hash = '#library';
+      });
     } catch (error) {
       content.className = 'error-state';
       content.innerHTML = `<h2>${error.code === 'NO_ALTERNATIVE' ? '暂无更多安全组合' : '无法生成今日方案'}</h2><p>${escapeHtml(error.message)}</p><button class="button secondary" id="retry-plan">重试</button>`;
