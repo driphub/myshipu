@@ -178,6 +178,16 @@ export function createStaticApi({ store, loadBootstrap, clock = () => new Date()
       const context = recommendationContext(state, date, scope);
       const entries = state.recommendationHistory.entries;
       const currentRelevant = entries.filter((entry) => entry.date === date && entry.scopeKey === context.scopeKey);
+      const transactionWinner = currentRelevant.find((entry) => entry.status === 'active');
+      if (!rotate && transactionWinner?.inputFingerprint === context.inputFingerprint) {
+        const existing = context.plans.find((plan) => (
+          plan.recipe.id === transactionWinner.recipeId && plan.tea.id === transactionWinner.teaId
+        ));
+        if (existing) {
+          result = presentPlan(existing, transactionWinner, context.members, context.confirmedTagsByMember, bootstrap.labels);
+          return state;
+        }
+      }
       const excluded = rotate ? new Set(currentRelevant.map((entry) => `${entry.recipeId}:${entry.teaId}`)) : new Set();
       const selected = context.plans.find((plan) => !excluded.has(`${plan.recipe.id}:${plan.tea.id}`));
       if (!selected) error('NO_ALTERNATIVE', '本范围暂无更多安全候选', 409);

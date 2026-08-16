@@ -6,21 +6,14 @@ const {
   scoreItemForMember,
   rankPlanPairs,
 } = require('../../src/domain/recommendation-engine');
+const fixtures = require('../fixtures/recommendation-cases.json');
 
 function member(overrides = {}) {
-  return {
-    id: 'member-1', name: '测试成员', birthYear: 1988, ageGroup: 'adult',
-    needTags: ['spleen-support'], preferenceTags: ['soup'], allergies: [], avoidIngredients: [],
-    pregnancyStatus: 'none', chronicConditions: [], medications: [], ...overrides,
-  };
+  return { ...fixtures.member, ...overrides };
 }
 
 function item(overrides = {}) {
-  return {
-    id: 'item-1', name: '测试条目', ingredients: [{ id: 'yam', name: '山药' }],
-    needTags: ['spleen-support'], preferenceTags: ['soup'], seasonTags: ['autumn'],
-    hardContraindications: [], cautionFlags: [], medicinalTea: false, ...overrides,
-  };
+  return { ...fixtures.item, ...overrides };
 }
 
 test('maps calendar months to deterministic local seasons', () => {
@@ -38,10 +31,10 @@ test('filters allergies, avoided ingredients, hard flags, and medicinal tea for 
 });
 
 test('calculates the documented 95 score and subtracts cautions before clamping', () => {
-  assert.strictEqual(scoreItemForMember(item(), member(), 'autumn'), 95);
+  assert.strictEqual(scoreItemForMember(item(), member(), 'autumn'), fixtures.scores.documented);
   assert.strictEqual(
     scoreItemForMember(item({ cautionFlags: ['hypertension'] }), member({ chronicConditions: ['hypertension'] }), 'autumn'),
-    85
+    fixtures.scores.withCaution
   );
 });
 
@@ -52,7 +45,7 @@ test('maps confirmed doctor tags into recommendation needs', () => {
     'summer',
     ['dryness-tendency']
   );
-  assert.strictEqual(result, 90);
+  assert.strictEqual(result, fixtures.scores.confirmedDryness);
 });
 
 test('ranks plan pairs by the least-suited family member and then stable ids', () => {

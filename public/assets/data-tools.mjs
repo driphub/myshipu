@@ -16,7 +16,7 @@ export async function exportData({
 }) {
   if (!confirmFn('导出文件包含未加密的家庭健康资料和舌象照片。确认导出并自行妥善保管吗？')) return false;
   const { filename, data } = await api('/api/data/export');
-  download(filename, `${JSON.stringify(data, null, 2)}\n`);
+  download(filename, `${JSON.stringify(data)}\n`);
   return true;
 }
 
@@ -32,7 +32,8 @@ export async function importData({
   if (!confirmFn('导入会用此未加密备份替换当前浏览器中的全部家庭资料、照片和历史。确认继续吗？')) return false;
   let data;
   try {
-    data = JSON.parse(await file.text());
+    const text = new TextDecoder('utf-8', { fatal: true }).decode(await file.arrayBuffer());
+    data = JSON.parse(text);
   } catch (_) {
     throw new Error('备份文件不是有效的 UTF-8 JSON');
   }

@@ -8,10 +8,10 @@ test('export asks for privacy confirmation and downloads api data', async () => 
   const result = await exportData({
     api: async (path) => { calls.push(path); return { filename: 'backup.json', data: { schemaVersion: 1 } }; },
     confirmFn: () => true,
-    download: (filename, text) => calls.push([filename, JSON.parse(text)]),
+    download: (filename, text) => calls.push([filename, text]),
   });
   assert.strictEqual(result, true);
-  assert.deepStrictEqual(calls, ['/api/data/export', ['backup.json', { schemaVersion: 1 }]]);
+  assert.deepStrictEqual(calls, ['/api/data/export', ['backup.json', '{"schemaVersion":1}\n']]);
 });
 
 test('cancelled export does not read private data', async () => {
@@ -31,12 +31,22 @@ test('import rejects oversized files before reading and submits parsed json afte
   assert.strictEqual(read, false);
 
   const calls = [];
+  const validBytes = new TextEncoder().encode('{"schemaVersion":1}');
   assert.strictEqual(await importData({
-    file: { size: 20, type: 'application/json', name: 'backup.json', text: async () => '{"schemaVersion":1}' },
+    file: { size: validBytes.byteLength, type: 'application/json', name: 'backup.json', arrayBuffer: async () => validBytes.buffer },
     api: async (path, options) => calls.push([path, options]), confirmFn: () => true,
   }), true);
   assert.deepStrictEqual(calls[0][0], '/api/data/import');
   assert.deepStrictEqual(calls[0][1].body, { schemaVersion: 1 });
+});
+
+test('import rejects invalid UTF-8 bytes', async () => {
+  const { importData } = await toolsPromise;
+  const bytes = Uint8Array.from([0xff, 0xfe, 0x7b, 0x7d]);
+  await assert.rejects(() => importData({
+    file: { size: bytes.byteLength, type: 'application/json', name: 'backup.json', arrayBuffer: async () => bytes.buffer },
+    api: async () => {}, confirmFn: () => true,
+  }), /UTF-8/);
 });
 
 test('family page contains static-only local backup controls', () => {

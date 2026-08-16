@@ -77,6 +77,14 @@ test('static api reuses and rotates safe recommendation history', async () => {
   assert.strictEqual(child.tea.medicinalTea, false);
 });
 
+test('concurrent first recommendation requests reuse the transaction winner', async () => {
+  const { api } = await context();
+  const path = '/api/recommendations?date=2026-08-16&scope=member%3Amember-lin';
+  const [first, second] = await Promise.all([api(path), api(path)]);
+  assert.strictEqual(second.historyId, first.historyId);
+  assert.strictEqual((await api('/api/recommendation-history?date=2026-08-16&scope=member%3Amember-lin')).entries.length, 1);
+});
+
 test('static api supports tongue draft and explicit state actions', async () => {
   const { api } = await context();
   const body = new Fields({
