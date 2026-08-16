@@ -34,6 +34,22 @@ test('application router loads all four real page modules', () => {
   assert.strictEqual(app.includes('此模块正在载入'), false);
 });
 
+test('shared ui selects static adapter and resolves media without root-relative paths', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', '..', 'public', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', '..', 'public', 'assets', 'app.js'), 'utf8');
+  const api = fs.readFileSync(path.join(__dirname, '..', '..', 'public', 'assets', 'api.js'), 'utf8');
+  assert.ok(html.includes('href="./assets/styles.css"'));
+  assert.ok(html.includes('src="./assets/app.js"'));
+  assert.ok(app.includes('window.__MINGYUAN_STATIC__'));
+  assert.ok(app.includes('./static-api.mjs'));
+  assert.ok(api.includes('export function mediaUrl'));
+  for (const page of ['today.js', 'library.js', 'tongue.js']) {
+    const source = read(page);
+    assert.ok(source.includes('mediaUrl'), page);
+    assert.strictEqual(/src="\/$/.test(source), false);
+  }
+});
+
 test('today page links recipes to the library and shows recent tongue context', () => {
   const source = read('today.js');
   assert.ok(source.includes('mingyuan-library-item'));

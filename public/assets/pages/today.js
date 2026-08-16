@@ -1,4 +1,4 @@
-import { escapeHtml } from '../api.js';
+import { escapeHtml, mediaUrl } from '../api.js';
 
 function localDate() {
   const date = new Date();
@@ -41,8 +41,8 @@ function planMarkup(plan, members) {
   const reasons = plan.reasons.length ? plan.reasons : ['兼顾已登记的家庭需求'];
   return `<div class="today-heading"><div><p class="eyebrow">${escapeHtml(plan.date)} · ${escapeHtml({ spring: '春季', summer: '夏季', autumn: '秋季', winter: '冬季' }[plan.season])}</p><h1>今日${plan.scopeKey.startsWith('all:') ? '全家' : '个人'}食养方案</h1><p class="lede">从家庭档案、忌口和已确认记录中筛选，给出可解释的日常搭配。</p></div><button class="button primary" id="rotate-plan" aria-label="换一套方案"><span aria-hidden="true">↻</span> 换一套方案</button></div>
     <div class="recommendation-grid" aria-live="polite">
-      <article class="recipe-feature"><img src="/${escapeHtml(plan.recipe.image)}" alt="${escapeHtml(plan.recipe.name)}"><div class="image-shade"></div><div class="recipe-copy"><span class="on-image-tag">主菜 · ${escapeHtml(plan.recipe.duration)}</span><h2>${escapeHtml(plan.recipe.name)}</h2><p>${plan.recipe.ingredients.map((item) => escapeHtml(item.name)).join(' · ')}</p><button class="text-action" data-library-id="${escapeHtml(plan.recipe.id)}">查看做法 <span aria-hidden="true">→</span></button></div></article>
-      <article class="tea-feature"><div class="tea-symbol" aria-hidden="true">茶</div><p class="section-label">今日茶饮</p><h2>${escapeHtml(plan.tea.name)}</h2><p>${plan.tea.ingredients.map((item) => `${escapeHtml(item.name)} ${escapeHtml(item.amount)}`).join(' · ')}</p><dl><div><dt>用量</dt><dd>${escapeHtml(plan.tea.amount)}</dd></div><div><dt>时间</dt><dd>${escapeHtml(plan.tea.timing)}</dd></div></dl><img src="/${escapeHtml(plan.tea.image)}" alt="${escapeHtml(plan.tea.name)}"></article>
+      <article class="recipe-feature"><img src="${escapeHtml(mediaUrl(plan.recipe.image))}" alt="${escapeHtml(plan.recipe.name)}"><div class="image-shade"></div><div class="recipe-copy"><span class="on-image-tag">主菜 · ${escapeHtml(plan.recipe.duration)}</span><h2>${escapeHtml(plan.recipe.name)}</h2><p>${plan.recipe.ingredients.map((item) => escapeHtml(item.name)).join(' · ')}</p><button class="text-action" data-library-id="${escapeHtml(plan.recipe.id)}">查看做法 <span aria-hidden="true">→</span></button></div></article>
+      <article class="tea-feature"><div class="tea-symbol" aria-hidden="true">茶</div><p class="section-label">今日茶饮</p><h2>${escapeHtml(plan.tea.name)}</h2><p>${plan.tea.ingredients.map((item) => `${escapeHtml(item.name)} ${escapeHtml(item.amount)}`).join(' · ')}</p><dl><div><dt>用量</dt><dd>${escapeHtml(plan.tea.amount)}</dd></div><div><dt>时间</dt><dd>${escapeHtml(plan.tea.timing)}</dd></div></dl><img src="${escapeHtml(mediaUrl(plan.tea.image))}" alt="${escapeHtml(plan.tea.name)}"></article>
     </div>
     ${plan.warnings.length ? `<div class="warning-banner"><strong>慎用提示</strong>${plan.warnings.map((warning) => `<span>${escapeHtml(warning)}</span>`).join('')}</div>` : ''}
     <div class="insight-grid">
