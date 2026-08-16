@@ -1,0 +1,995 @@
+{
+  "state": {
+    "schemaVersion": 1,
+    "revision": 0,
+    "family": {
+      "version": 1,
+      "members": [
+        {
+          "id": "member-lin",
+          "name": "林女士",
+          "birthYear": 1988,
+          "ageGroup": "adult",
+          "needTags": [
+            "spleen-support",
+            "gentle-moistening"
+          ],
+          "preferenceTags": [
+            "soup",
+            "mild"
+          ],
+          "allergies": [],
+          "avoidIngredients": [
+            "chili"
+          ],
+          "pregnancyStatus": "none",
+          "chronicConditions": [],
+          "medications": [],
+          "notes": "偏爱清淡汤羹"
+        },
+        {
+          "id": "member-zhou",
+          "name": "周先生",
+          "birthYear": 1985,
+          "ageGroup": "adult",
+          "needTags": [
+            "low-oil",
+            "low-salt"
+          ],
+          "preferenceTags": [
+            "mild"
+          ],
+          "allergies": [
+            "peanut"
+          ],
+          "avoidIngredients": [],
+          "pregnancyStatus": "none",
+          "chronicConditions": [
+            "hypertension"
+          ],
+          "medications": [
+            "blood-pressure-lowering"
+          ],
+          "notes": "日常注意少油少盐"
+        },
+        {
+          "id": "member-an",
+          "name": "小安",
+          "birthYear": 2017,
+          "ageGroup": "child",
+          "needTags": [
+            "growth-support",
+            "digestion-support"
+          ],
+          "preferenceTags": [
+            "soft",
+            "soup"
+          ],
+          "allergies": [],
+          "avoidIngredients": [
+            "chili"
+          ],
+          "pregnancyStatus": "none",
+          "chronicConditions": [],
+          "medications": [],
+          "notes": "儿童示例档案"
+        }
+      ]
+    },
+    "recipes": {
+      "version": 1,
+      "items": [
+        {
+          "id": "recipe-yam-lotus-soup",
+          "name": "山药莲子排骨汤",
+          "type": "recipe",
+          "ingredients": [
+            {
+              "id": "yam",
+              "name": "山药",
+              "amount": "200g"
+            },
+            {
+              "id": "lotus-seed",
+              "name": "莲子",
+              "amount": "30g"
+            },
+            {
+              "id": "pork-rib",
+              "name": "排骨",
+              "amount": "300g"
+            }
+          ],
+          "needTags": [
+            "spleen-support",
+            "gentle-moistening"
+          ],
+          "preferenceTags": [
+            "soup",
+            "mild"
+          ],
+          "seasonTags": [
+            "autumn",
+            "winter"
+          ],
+          "hardContraindications": [],
+          "cautionFlags": [],
+          "duration": "45分钟",
+          "mealTime": "午餐或晚餐",
+          "benefits": [
+            "spleen-support",
+            "gentle-moistening"
+          ],
+          "steps": [
+            "食材洗净并按标注切配",
+            "加水或少量油烹制至熟",
+            "少盐调味后温热食用"
+          ],
+          "image": "assets/images/yam-soup.jpg"
+        },
+        {
+          "id": "recipe-pumpkin-lily",
+          "name": "百合蒸南瓜",
+          "type": "recipe",
+          "ingredients": [
+            {
+              "id": "pumpkin",
+              "name": "南瓜",
+              "amount": "300g"
+            },
+            {
+              "id": "lily-bulb",
+              "name": "百合",
+              "amount": "30g"
+            }
+          ],
+          "needTags": [
+            "gentle-moistening",
+            "digestion-support"
+          ],
+          "preferenceTags": [
+            "soft",
+            "vegetarian"
+          ],
+          "seasonTags": [
+            "autumn"
+          ],
+          "hardContraindications": [],
+          "cautionFlags": [],
+          "duration": "25分钟",
+          "mealTime": "午餐或晚餐",
+          "benefits": [
+            "gentle-moistening",
+            "digestion-support"
+          ],
+          "steps": [
+            "食材洗净并按标注切配",
+            "加水或少量油烹制至熟",
+            "少盐调味后温热食用"
+          ],
+          "image": "assets/images/pumpkin-lily.jpg"
+        },
+        {
+          "id": "recipe-mushroom-tofu",
+          "name": "菌菇豆腐煲",
+          "type": "recipe",
+          "ingredients": [
+            {
+              "id": "mushroom",
+              "name": "菌菇",
+              "amount": "150g"
+            },
+            {
+              "id": "tofu",
+              "name": "豆腐",
+              "amount": "250g"
+            }
+          ],
+          "needTags": [
+            "low-oil",
+            "growth-support"
+          ],
+          "preferenceTags": [
+            "soft",
+            "vegetarian"
+          ],
+          "seasonTags": [
+            "all"
+          ],
+          "hardContraindications": [],
+          "cautionFlags": [],
+          "duration": "35分钟",
+          "mealTime": "午餐或晚餐",
+          "benefits": [
+            "low-oil",
+            "growth-support"
+          ],
+          "steps": [
+            "食材洗净并按标注切配",
+            "加水或少量油烹制至熟",
+            "少盐调味后温热食用"
+          ],
+          "image": "assets/images/lotus-chicken.jpg"
+        },
+        {
+          "id": "recipe-winter-melon-barley",
+          "name": "冬瓜薏米瘦肉汤",
+          "type": "recipe",
+          "ingredients": [
+            {
+              "id": "winter-melon",
+              "name": "冬瓜",
+              "amount": "300g"
+            },
+            {
+              "id": "coix-seed",
+              "name": "炒薏米",
+              "amount": "30g"
+            },
+            {
+              "id": "pork-rib",
+              "name": "瘦肉",
+              "amount": "180g"
+            }
+          ],
+          "needTags": [
+            "spleen-support",
+            "low-oil"
+          ],
+          "preferenceTags": [
+            "soup",
+            "mild"
+          ],
+          "seasonTags": [
+            "summer"
+          ],
+          "hardContraindications": [],
+          "cautionFlags": [
+            "pregnant"
+          ],
+          "duration": "35分钟",
+          "mealTime": "午餐或晚餐",
+          "benefits": [
+            "spleen-support",
+            "low-oil"
+          ],
+          "steps": [
+            "食材洗净并按标注切配",
+            "加水或少量油烹制至熟",
+            "少盐调味后温热食用"
+          ],
+          "image": "assets/images/yam-soup.jpg"
+        },
+        {
+          "id": "recipe-millet-yam",
+          "name": "山药小米粥",
+          "type": "recipe",
+          "ingredients": [
+            {
+              "id": "yam",
+              "name": "山药",
+              "amount": "120g"
+            },
+            {
+              "id": "millet",
+              "name": "小米",
+              "amount": "80g"
+            }
+          ],
+          "needTags": [
+            "spleen-support",
+            "digestion-support"
+          ],
+          "preferenceTags": [
+            "soft",
+            "mild"
+          ],
+          "seasonTags": [
+            "all"
+          ],
+          "hardContraindications": [],
+          "cautionFlags": [],
+          "duration": "35分钟",
+          "mealTime": "午餐或晚餐",
+          "benefits": [
+            "spleen-support",
+            "digestion-support"
+          ],
+          "steps": [
+            "食材洗净并按标注切配",
+            "加水或少量油烹制至熟",
+            "少盐调味后温热食用"
+          ],
+          "image": "assets/images/yam-soup.jpg"
+        },
+        {
+          "id": "recipe-corn-carrot-chicken",
+          "name": "玉米胡萝卜鸡汤",
+          "type": "recipe",
+          "ingredients": [
+            {
+              "id": "corn",
+              "name": "玉米",
+              "amount": "1根"
+            },
+            {
+              "id": "carrot",
+              "name": "胡萝卜",
+              "amount": "1根"
+            },
+            {
+              "id": "chicken",
+              "name": "鸡肉",
+              "amount": "300g"
+            }
+          ],
+          "needTags": [
+            "growth-support",
+            "gentle-moistening"
+          ],
+          "preferenceTags": [
+            "soup",
+            "mild"
+          ],
+          "seasonTags": [
+            "all"
+          ],
+          "hardContraindications": [],
+          "cautionFlags": [],
+          "duration": "35分钟",
+          "mealTime": "午餐或晚餐",
+          "benefits": [
+            "growth-support",
+            "gentle-moistening"
+          ],
+          "steps": [
+            "食材洗净并按标注切配",
+            "加水或少量油烹制至熟",
+            "少盐调味后温热食用"
+          ],
+          "image": "assets/images/lotus-chicken.jpg"
+        },
+        {
+          "id": "recipe-tremella-pear",
+          "name": "银耳雪梨羹",
+          "type": "recipe",
+          "ingredients": [
+            {
+              "id": "tremella",
+              "name": "银耳",
+              "amount": "15g"
+            },
+            {
+              "id": "pear",
+              "name": "雪梨",
+              "amount": "1个"
+            }
+          ],
+          "needTags": [
+            "gentle-moistening"
+          ],
+          "preferenceTags": [
+            "soft",
+            "vegetarian"
+          ],
+          "seasonTags": [
+            "autumn"
+          ],
+          "hardContraindications": [],
+          "cautionFlags": [],
+          "duration": "35分钟",
+          "mealTime": "午餐或晚餐",
+          "benefits": [
+            "gentle-moistening"
+          ],
+          "steps": [
+            "食材洗净并按标注切配",
+            "加水或少量油烹制至熟",
+            "少盐调味后温热食用"
+          ],
+          "image": "assets/images/yam-soup.jpg"
+        },
+        {
+          "id": "recipe-red-bean-pumpkin",
+          "name": "赤小豆南瓜粥",
+          "type": "recipe",
+          "ingredients": [
+            {
+              "id": "red-bean",
+              "name": "赤小豆",
+              "amount": "40g"
+            },
+            {
+              "id": "pumpkin",
+              "name": "南瓜",
+              "amount": "150g"
+            },
+            {
+              "id": "rice",
+              "name": "大米",
+              "amount": "60g"
+            }
+          ],
+          "needTags": [
+            "spleen-support",
+            "low-oil"
+          ],
+          "preferenceTags": [
+            "soft",
+            "vegetarian"
+          ],
+          "seasonTags": [
+            "summer",
+            "autumn"
+          ],
+          "hardContraindications": [],
+          "cautionFlags": [],
+          "duration": "35分钟",
+          "mealTime": "午餐或晚餐",
+          "benefits": [
+            "spleen-support",
+            "low-oil"
+          ],
+          "steps": [
+            "食材洗净并按标注切配",
+            "加水或少量油烹制至熟",
+            "少盐调味后温热食用"
+          ],
+          "image": "assets/images/yam-soup.jpg"
+        },
+        {
+          "id": "recipe-fish-tofu",
+          "name": "鲫鱼豆腐汤",
+          "type": "recipe",
+          "ingredients": [
+            {
+              "id": "fish",
+              "name": "鲫鱼",
+              "amount": "1条"
+            },
+            {
+              "id": "tofu",
+              "name": "豆腐",
+              "amount": "200g"
+            },
+            {
+              "id": "ginger",
+              "name": "生姜",
+              "amount": "3片"
+            }
+          ],
+          "needTags": [
+            "growth-support",
+            "spleen-support"
+          ],
+          "preferenceTags": [
+            "soup"
+          ],
+          "seasonTags": [
+            "all"
+          ],
+          "hardContraindications": [],
+          "cautionFlags": [],
+          "duration": "35分钟",
+          "mealTime": "午餐或晚餐",
+          "benefits": [
+            "growth-support",
+            "spleen-support"
+          ],
+          "steps": [
+            "食材洗净并按标注切配",
+            "加水或少量油烹制至熟",
+            "少盐调味后温热食用"
+          ],
+          "image": "assets/images/yam-soup.jpg"
+        },
+        {
+          "id": "recipe-black-sesame-walnut",
+          "name": "黑芝麻核桃糊",
+          "type": "recipe",
+          "ingredients": [
+            {
+              "id": "black-sesame",
+              "name": "黑芝麻",
+              "amount": "30g"
+            },
+            {
+              "id": "walnut",
+              "name": "核桃",
+              "amount": "20g"
+            },
+            {
+              "id": "rice",
+              "name": "糯米",
+              "amount": "30g"
+            }
+          ],
+          "needTags": [
+            "growth-support",
+            "gentle-moistening"
+          ],
+          "preferenceTags": [
+            "soft"
+          ],
+          "seasonTags": [
+            "winter"
+          ],
+          "hardContraindications": [
+            "walnut"
+          ],
+          "cautionFlags": [],
+          "duration": "35分钟",
+          "mealTime": "午餐或晚餐",
+          "benefits": [
+            "growth-support",
+            "gentle-moistening"
+          ],
+          "steps": [
+            "食材洗净并按标注切配",
+            "加水或少量油烹制至熟",
+            "少盐调味后温热食用"
+          ],
+          "image": "assets/images/yam-soup.jpg"
+        }
+      ]
+    },
+    "teas": {
+      "version": 1,
+      "items": [
+        {
+          "id": "tea-chenpi-poria",
+          "name": "陈皮茯苓饮",
+          "type": "tea",
+          "ingredients": [
+            {
+              "id": "chenpi",
+              "name": "陈皮",
+              "amount": "3g"
+            },
+            {
+              "id": "poria",
+              "name": "茯苓",
+              "amount": "8g"
+            }
+          ],
+          "needTags": [
+            "spleen-support"
+          ],
+          "preferenceTags": [
+            "mild"
+          ],
+          "seasonTags": [
+            "all"
+          ],
+          "hardContraindications": [],
+          "cautionFlags": [],
+          "medicinalTea": true,
+          "amount": "每次300ml",
+          "timing": "餐后温饮",
+          "benefits": [
+            "spleen-support"
+          ],
+          "steps": [
+            "材料冲洗后放入杯中",
+            "沸水焖泡10分钟后温饮"
+          ],
+          "image": "assets/images/herbal-tea.jpg"
+        },
+        {
+          "id": "tea-roasted-barley",
+          "name": "炒薏米陈皮水",
+          "type": "tea",
+          "ingredients": [
+            {
+              "id": "barley",
+              "name": "炒薏米",
+              "amount": "15g"
+            },
+            {
+              "id": "chenpi",
+              "name": "陈皮",
+              "amount": "3g"
+            }
+          ],
+          "needTags": [
+            "spleen-support"
+          ],
+          "preferenceTags": [
+            "mild"
+          ],
+          "seasonTags": [
+            "summer"
+          ],
+          "hardContraindications": [],
+          "cautionFlags": [
+            "pregnant"
+          ],
+          "medicinalTea": true,
+          "amount": "每次300ml",
+          "timing": "餐后温饮",
+          "benefits": [
+            "spleen-support"
+          ],
+          "steps": [
+            "材料冲洗后放入杯中",
+            "沸水焖泡10分钟后温饮"
+          ],
+          "image": "assets/images/herbal-tea.jpg"
+        },
+        {
+          "id": "tea-hawthorn-malt",
+          "name": "山楂麦芽饮",
+          "type": "tea",
+          "ingredients": [
+            {
+              "id": "hawthorn",
+              "name": "山楂",
+              "amount": "5g"
+            },
+            {
+              "id": "malt",
+              "name": "炒麦芽",
+              "amount": "8g"
+            }
+          ],
+          "needTags": [
+            "digestion-support"
+          ],
+          "preferenceTags": [
+            "mild"
+          ],
+          "seasonTags": [
+            "all"
+          ],
+          "hardContraindications": [],
+          "cautionFlags": [
+            "pregnant"
+          ],
+          "medicinalTea": true,
+          "amount": "每次300ml",
+          "timing": "餐后温饮",
+          "benefits": [
+            "digestion-support"
+          ],
+          "steps": [
+            "材料冲洗后放入杯中",
+            "沸水焖泡10分钟后温饮"
+          ],
+          "image": "assets/images/herbal-tea.jpg"
+        },
+        {
+          "id": "tea-jujube-goji",
+          "name": "红枣枸杞饮",
+          "type": "tea",
+          "ingredients": [
+            {
+              "id": "jujube",
+              "name": "红枣",
+              "amount": "3枚"
+            },
+            {
+              "id": "goji",
+              "name": "枸杞",
+              "amount": "8g"
+            }
+          ],
+          "needTags": [
+            "gentle-moistening"
+          ],
+          "preferenceTags": [
+            "mild"
+          ],
+          "seasonTags": [
+            "winter"
+          ],
+          "hardContraindications": [],
+          "cautionFlags": [
+            "diabetes"
+          ],
+          "medicinalTea": true,
+          "amount": "每次300ml",
+          "timing": "餐后温饮",
+          "benefits": [
+            "gentle-moistening"
+          ],
+          "steps": [
+            "材料冲洗后放入杯中",
+            "沸水焖泡10分钟后温饮"
+          ],
+          "image": "assets/images/herbal-tea.jpg"
+        },
+        {
+          "id": "tea-chrysanthemum",
+          "name": "菊花枸杞饮",
+          "type": "tea",
+          "ingredients": [
+            {
+              "id": "chrysanthemum",
+              "name": "菊花",
+              "amount": "5朵"
+            },
+            {
+              "id": "goji",
+              "name": "枸杞",
+              "amount": "6g"
+            }
+          ],
+          "needTags": [
+            "gentle-moistening"
+          ],
+          "preferenceTags": [
+            "mild"
+          ],
+          "seasonTags": [
+            "spring",
+            "summer"
+          ],
+          "hardContraindications": [],
+          "cautionFlags": [],
+          "medicinalTea": true,
+          "amount": "每次300ml",
+          "timing": "餐后温饮",
+          "benefits": [
+            "gentle-moistening"
+          ],
+          "steps": [
+            "材料冲洗后放入杯中",
+            "沸水焖泡10分钟后温饮"
+          ],
+          "image": "assets/images/herbal-tea.jpg"
+        },
+        {
+          "id": "tea-mint-chenpi",
+          "name": "薄荷陈皮饮",
+          "type": "tea",
+          "ingredients": [
+            {
+              "id": "mint",
+              "name": "薄荷",
+              "amount": "3g"
+            },
+            {
+              "id": "chenpi",
+              "name": "陈皮",
+              "amount": "3g"
+            }
+          ],
+          "needTags": [
+            "digestion-support"
+          ],
+          "preferenceTags": [
+            "mild"
+          ],
+          "seasonTags": [
+            "summer"
+          ],
+          "hardContraindications": [],
+          "cautionFlags": [],
+          "medicinalTea": true,
+          "amount": "每次300ml",
+          "timing": "餐后温饮",
+          "benefits": [
+            "digestion-support"
+          ],
+          "steps": [
+            "材料冲洗后放入杯中",
+            "沸水焖泡10分钟后温饮"
+          ],
+          "image": "assets/images/herbal-tea.jpg"
+        },
+        {
+          "id": "tea-pear-honey",
+          "name": "雪梨蜂蜜饮",
+          "type": "tea",
+          "ingredients": [
+            {
+              "id": "pear",
+              "name": "雪梨",
+              "amount": "半个"
+            },
+            {
+              "id": "honey",
+              "name": "蜂蜜",
+              "amount": "5g"
+            }
+          ],
+          "needTags": [
+            "gentle-moistening"
+          ],
+          "preferenceTags": [
+            "mild"
+          ],
+          "seasonTags": [
+            "autumn"
+          ],
+          "hardContraindications": [],
+          "cautionFlags": [
+            "diabetes"
+          ],
+          "medicinalTea": false,
+          "amount": "每次300ml",
+          "timing": "餐后温饮",
+          "benefits": [
+            "gentle-moistening"
+          ],
+          "steps": [
+            "材料冲洗后放入杯中",
+            "沸水焖泡10分钟后温饮"
+          ],
+          "image": "assets/images/herbal-tea.jpg"
+        },
+        {
+          "id": "tea-jujube-ginger",
+          "name": "红枣姜饮",
+          "type": "tea",
+          "ingredients": [
+            {
+              "id": "jujube",
+              "name": "红枣",
+              "amount": "3枚"
+            },
+            {
+              "id": "ginger",
+              "name": "生姜",
+              "amount": "2片"
+            }
+          ],
+          "needTags": [
+            "spleen-support"
+          ],
+          "preferenceTags": [
+            "mild"
+          ],
+          "seasonTags": [
+            "winter"
+          ],
+          "hardContraindications": [],
+          "cautionFlags": [],
+          "medicinalTea": true,
+          "amount": "每次300ml",
+          "timing": "餐后温饮",
+          "benefits": [
+            "spleen-support"
+          ],
+          "steps": [
+            "材料冲洗后放入杯中",
+            "沸水焖泡10分钟后温饮"
+          ],
+          "image": "assets/images/herbal-tea.jpg"
+        }
+      ]
+    },
+    "tongueRecords": {
+      "version": 1,
+      "records": []
+    },
+    "recommendationHistory": {
+      "version": 1,
+      "entries": []
+    }
+  },
+  "taxonomy": {
+    "needTags": [
+      "spleen-support",
+      "digestion-support",
+      "low-oil",
+      "low-salt",
+      "gentle-moistening",
+      "growth-support"
+    ],
+    "preferenceTags": [
+      "mild",
+      "soft",
+      "soup",
+      "vegetarian"
+    ],
+    "confirmedTags": [
+      "dampness-tendency",
+      "dryness-tendency",
+      "weak-digestion"
+    ],
+    "pregnancyStatuses": [
+      "none",
+      "pregnant",
+      "postpartum"
+    ],
+    "chronicConditions": [
+      "hypertension",
+      "diabetes",
+      "kidney-disease"
+    ],
+    "medications": [
+      "anticoagulant",
+      "glucose-lowering",
+      "blood-pressure-lowering"
+    ],
+    "ingredients": [
+      "peanut",
+      "shrimp",
+      "milk",
+      "chili",
+      "yam",
+      "lotus-seed",
+      "pork-rib",
+      "carrot",
+      "ginger",
+      "millet",
+      "rice",
+      "pumpkin",
+      "lily-bulb",
+      "chicken",
+      "mushroom",
+      "tofu",
+      "winter-melon",
+      "red-bean",
+      "coix-seed",
+      "corn",
+      "fish",
+      "pear",
+      "tremella",
+      "black-sesame",
+      "walnut",
+      "jujube",
+      "goji",
+      "chenpi",
+      "poria",
+      "barley",
+      "hawthorn",
+      "malt",
+      "chrysanthemum",
+      "cassia-seed",
+      "mint",
+      "honey",
+      "green-bean"
+    ],
+    "tongue": {
+      "color": [
+        "pale",
+        "pink",
+        "red",
+        "dark"
+      ],
+      "coating": [
+        "white",
+        "yellow",
+        "none"
+      ],
+      "thickness": [
+        "thin",
+        "thick"
+      ],
+      "moisture": [
+        "dry",
+        "normal",
+        "wet"
+      ]
+    },
+    "tongueStatuses": [
+      "draft",
+      "active",
+      "archived"
+    ],
+    "seasons": [
+      "spring",
+      "summer",
+      "autumn",
+      "winter",
+      "all"
+    ]
+  },
+  "labels": {
+    "spleen-support": "健脾养胃",
+    "digestion-support": "帮助消化",
+    "low-oil": "少油",
+    "low-salt": "少盐",
+    "gentle-moistening": "温和润养",
+    "growth-support": "成长营养",
+    "mild": "清淡",
+    "soft": "软烂",
+    "soup": "汤羹",
+    "vegetarian": "素食",
+    "dampness-tendency": "湿重倾向（医生确认）",
+    "dryness-tendency": "偏燥倾向（医生确认）",
+    "weak-digestion": "消化偏弱（医生确认）"
+  }
+}
