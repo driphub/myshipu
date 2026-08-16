@@ -1,4 +1,5 @@
 import { escapeHtml } from '../api.js';
+import { exportData, importData } from '../data-tools.mjs';
 
 function options(values, selected = [], labels = {}) {
   return values.map((value) => `<option value="${escapeHtml(value)}" ${selected.includes(value) ? 'selected' : ''}>${escapeHtml(labels[value] || value)}</option>`).join('');
@@ -27,9 +28,10 @@ function selected(form, name) {
 }
 
 export async function renderFamily(context) {
-  const { mount, api, members, taxonomy, labels, refreshMembers, showToast } = context;
+  const { mount, api, members, taxonomy, labels, refreshMembers, showToast, isStatic = false } = context;
   mount.innerHTML = `<section class="page-wrap"><div class="page-head"><div><p class="eyebrow">家庭档案</p><h1>认识每一位家人的日常需求</h1><p>过敏和明确忌口会被硬性排除，其他信息用于解释推荐。</p></div><button class="button primary" id="add-member">＋ 新增成员</button></div>
     <div class="member-grid">${members.map((member) => `<article class="member-card"><div class="member-card-head"><span class="avatar large">${escapeHtml(member.name.slice(0, 1))}</span><div><h2>${escapeHtml(member.name)}</h2><p>${new Date().getFullYear() - member.birthYear} 岁 · ${escapeHtml(member.ageGroup)}</p></div></div><div class="tag-list">${member.needTags.map((tag) => `<span>${escapeHtml(labels[tag] || tag)}</span>`).join('')}</div><dl><div><dt>过敏</dt><dd>${member.allergies.map(escapeHtml).join('、') || '无'}</dd></div><div><dt>忌口</dt><dd>${member.avoidIngredients.map(escapeHtml).join('、') || '无'}</dd></div></dl><div class="card-actions"><button class="icon-button" data-edit="${escapeHtml(member.id)}" title="编辑档案" aria-label="编辑${escapeHtml(member.name)}">✎</button><button class="icon-button danger" data-delete="${escapeHtml(member.id)}" title="删除成员" aria-label="删除${escapeHtml(member.name)}">×</button></div></article>`).join('')}</div>
+    ${isStatic ? `<section class="local-data-tools" aria-labelledby="local-data-title"><div><p class="eyebrow">本地数据</p><h2 id="local-data-title">备份家庭资料</h2><p>资料仅保存在当前浏览器。导出的 JSON 未加密并包含健康信息和照片，请妥善保管。</p></div><div class="local-data-actions"><button class="button secondary" id="export-local-data">导出数据</button><button class="button secondary" id="import-local-data">导入数据</button><input id="import-local-file" type="file" accept="application/json,.json" hidden></div></section>` : ''}
     <dialog id="member-dialog" class="modal"><div class="modal-head"><h2 id="member-dialog-title">家庭成员</h2><button class="icon-button" data-close aria-label="关闭">×</button></div><div id="member-form-slot"></div></dialog></section>`;
   const dialog = mount.querySelector('#member-dialog');
   const slot = mount.querySelector('#member-form-slot');
@@ -68,4 +70,24 @@ export async function renderFamily(context) {
       await renderFamily({ ...context, members: window.__mingyuanMembers });
     } catch (error) { showToast(error.message, 'error'); }
   }));
+  if (isStatic) {
+    const fileInput = mount.querySelector('#import-local-file');
+    mount.querySelector('#export-local-data').addEventListener('click', async () => {
+      try {
+        if (await exportData({ api })) showToast('本地数据已导出', 'success');
+      } catch (error) { showToast(error.message, 'error'); }
+    });
+    mount.querySelector('#import-local-data').addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', async () => {
+      try {
+        if (await importData({ api, file: fileInput.files[0] })) {
+          showToast('本地数据已导入', 'success');
+          window.location.reload();
+        }
+      } catch (error) {
+        showToast(error.message, 'error');
+        fileInput.value = '';
+      }
+    });
+  }
 }
